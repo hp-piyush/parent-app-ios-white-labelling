@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>White-label rollout — hour budget (iOS)</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #fafafa;
+      --fg: #1a1a1a;
+      --muted: #555;
+      --border: #ccc;
+      --code-bg: #f0f0f0;
+      --thead-bg: #e8e8e8;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121212;
+        --fg: #eee;
+        --muted: #aaa;
+        --border: #444;
+        --code-bg: #1e1e1e;
+        --thead-bg: #2a2a2a;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.55;
+      max-width: 58rem;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+      background: var(--bg);
+      color: var(--fg);
+    }
+    h1 { font-size: 1.65rem; margin-top: 0; line-height: 1.25; }
+    h2 { font-size: 1.2rem; margin-top: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; }
+    h3 { font-size: 1.05rem; margin-top: 1.5rem; }
+    p { margin: 0.75rem 0; }
+    a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+    strong { font-weight: 600; }
+    .lead { color: var(--muted); font-size: 0.95rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin: 1rem 0;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.65rem;
+      vertical-align: top;
+      text-align: left;
+    }
+    th { background: var(--thead-bg); font-weight: 600; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.88em;
+      background: var(--code-bg);
+      padding: 0.12em 0.35em;
+      border-radius: 4px;
+    }
+    ul { margin: 0.5rem 0 0.75rem; padding-left: 1.25rem; }
+    li { margin: 0.35rem 0; }
+    li ul { margin-top: 0.25rem; }
+    .footnote {
+      margin-top: 2.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>White-label rollout — hour budget (iOS)</h1>
+
+  <p class="lead">
+    iOS + bundled React Native — <strong>specified engineering hours</strong> per task (implement + test + fix).
+    Estimates are for <strong>one</strong> additional brand after a shared codebase exists; see assumptions below.
+    For comparison only (not the same numbers):
+    <a href="https://hp-piyush.github.io/white-labelling-timeline/">White-label rollout — hour budget (Android)</a>.
+  </p>
+
+  <p><strong>Why iOS totals differ from Android.</strong> Apple’s model is <strong>targets + bundle IDs + provisioning + ASC</strong> per installable app, not Gradle flavors. Expect more time on <strong>code signing and CI export</strong>, <strong>APNs + entitlements</strong>, <strong>Universal Links / AASA</strong> (host + <code>TEAMID.bundleid</code> correctness), <strong>App Store Connect</strong> (privacy questionnaire, screenshot matrix, TestFlight), and <strong>React Native + CocoaPods</strong> per scheme. Android’s <strong>104 h</strong> / <strong>16 h</strong> pipeline is a useful cross-check; this iOS plan is <strong>not</strong> copy-pasted from those figures.</p>
+
+  <p><strong>Scope.</strong> Client-side work to ship <em>distinct installable apps</em> from one repo (separate bundle IDs / App Store listings). <strong>Not</strong> backend implementation hours. Cross-reference any shared audit docs your project uses (e.g. <code>docs/WHITE_LABEL_AUDIT_CHECKLIST.md</code>).</p>
+
+  <p><strong>Totals.</strong> Sequential first brand: <strong>118 h</strong> (sum of phase totals below). Phases can run <strong>in parallel</strong>; wall-calendar time is not 118 ÷ 40. Each <strong>additional</strong> brand after the pipeline exists: <strong>20 h</strong> (assets, Firebase iOS client, universal links / OAuth + AASA, App Store Connect + TestFlight slice, smoke test).</p>
+
+  <p><strong>Assumptions.</strong> iOS UI work covers app-wide appearance tokens + splash, login, main shell, and settings — not a whole-repo purge of every hardcoded color. Runtime branding assumes the <strong>API contract and sample payloads</strong> exist before that block starts. One Apple Developer team; each brand still needs its own <strong>bundle ID</strong>, <strong>App ID</strong>, and <strong>distribution provisioning profile</strong> (or automatic signing with correct team + bundle).</p>
+
+  <h2>Summary (hours per phase)</h2>
+  <p>Each row is one work package. The third column states <strong>what is in scope</strong> for that hour line (deliverables and boundaries).</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Hours</th>
+        <th>What this includes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Xcode foundation</td>
+        <td>10 h</td>
+        <td>Per-brand <strong>target</strong> (or thin wrapper) with unique <strong>bundle identifier</strong> and <strong>product name</strong>; <strong>build configurations</strong> and <strong>.xcconfig</strong> as needed; <strong>schemes</strong> for archive/run; shared sources with minimal duplication; <strong>CI</strong> archiving a non-default scheme and producing <strong>.xcarchive</strong> / IPA with documented <strong>exportOptions.plist</strong> (or ASC API upload path). <strong>Signing</strong> documented: Automatic vs Manual, <strong>App Store</strong> + <strong>Development</strong> profiles <strong>per bundle ID</strong>, common failure modes (profile expiry, wrong team). Does <strong>not</strong> include enterprise legal review of Apple agreements or org-wide MDM.</td>
+      </tr>
+      <tr>
+        <td>Store-visible identity</td>
+        <td>10 h</td>
+        <td><strong>CFBundleDisplayName</strong>, <strong>App Icon</strong> in Asset Catalog (including <strong>dark / tinted</strong> variants if required), <strong>Launch Screen</strong> / storyboard or SwiftUI launch; notification <strong>category</strong> copy if brand-specific. Does <strong>not</strong> include in-app marketing beyond launcher / notification surface.</td>
+      </tr>
+      <tr>
+        <td>Firebase &amp; push</td>
+        <td>8 h</td>
+        <td>Firebase <strong>iOS app</strong> per <strong>bundle ID</strong>, <strong>GoogleService-Info.plist</strong> placement (per target or scripted copy), <strong>Push Notifications</strong> capability, <strong>APNs</strong> auth key or certs in Apple + Firebase, <strong>Release</strong> archive proof, FCM → APNs → device UI on hardware. Does <strong>not</strong> include server campaign design or Notification Service Extension graphics.</td>
+      </tr>
+      <tr>
+        <td>iOS theme (high-traffic surfaces)</td>
+        <td>28 h</td>
+        <td><strong>Asset Catalog</strong> color sets, SwiftUI / UIKit appearance on shell flows; splash, login, main shell, settings on-brand; <strong>Dynamic Type</strong> / contrast spot-checks on those screens; <strong>targeted</strong> fixes for blocking hardcoded colors only. Does <strong>not</strong> include repo-wide tokenization (separate audit).</td>
+      </tr>
+      <tr>
+        <td>Universal links, URL schemes, OAuth</td>
+        <td>14 h</td>
+        <td><strong>Associated Domains</strong> (<code>applinks:</code>), <strong>apple-app-site-association</strong> (correct <code>appID</code>, paths, <strong>Content-Type</strong>, CDN); custom URL schemes if used; OAuth <strong>redirect URIs</strong> per <strong>bundle ID</strong>; Safari / Notes / Mail <strong>real-device</strong> verification. Does <strong>not</strong> include server URL scheme redesign.</td>
+      </tr>
+      <tr>
+        <td>React Native bundle</td>
+        <td>16 h</td>
+        <td><strong>Per-scheme / per-target</strong> (or build-time) wiring for <code>constants/colors.ts</code>; <strong>Metro env</strong> and <strong>Pods</strong> sanity across configurations; brand <code>require(...)</code> images on live screens; product strings in bundled JS/TS. Does <strong>not</strong> include new RN architecture migration or feature rewrites.</td>
+      </tr>
+      <tr>
+        <td>Runtime branding hook-up</td>
+        <td>22 h</td>
+        <td>Tenant/org resolution, branding API, cache rules, remote colors/logos, fallback to <strong>target defaults</strong>, QA on cold start and login. Assumes <strong>API contract + sample JSON</strong> before start. Does <strong>not</strong> include backend build-out.</td>
+      </tr>
+      <tr>
+        <td>App Store Connect &amp; release</td>
+        <td>10 h</td>
+        <td>New <strong>ASC</strong> app (or first upload), listing text, URLs, <strong>screenshots</strong> for required device classes, <strong>App Privacy</strong> answers, export compliance prompts, upload, <strong>TestFlight</strong> internal/external, short sign-off. Does <strong>not</strong> include legal policy drafting or ASO experiments.</td>
+      </tr>
+      <tr>
+        <td><strong>Total (first brand, sequential)</strong></td>
+        <td><strong>118 h</strong></td>
+        <td><strong>10 + 10 + 8 + 28 + 14 + 16 + 22 + 10.</strong> Sized for iOS-specific friction (signing, AASA, ASC, RN/Pods). <strong></strong></td>
+      </tr>
+      <tr>
+        <td><strong>Each further brand (pipeline already done)</strong></td>
+        <td><strong>20 h</strong></td>
+        <td>New bundle’s assets + plist, Firebase iOS client, AASA/IdP deltas, ASC slice (privacy + screenshots + upload), smoke test — no second full Xcode/RN foundation. See breakdown table below.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Further brand after pipeline exists — 20 h</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th>
+        <th>Hours</th>
+        <th>What this includes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Target res &amp; labels</td>
+        <td>5 h</td>
+        <td>App Icon / launch deltas, display name; SpringBoard + first-frame check.</td>
+      </tr>
+      <tr>
+        <td>Firebase client</td>
+        <td>3 h</td>
+        <td>New Firebase iOS app, <strong>GoogleService-Info.plist</strong>, clean archive, one push.</td>
+      </tr>
+      <tr>
+        <td>Links &amp; OAuth + AASA</td>
+        <td>4 h</td>
+        <td>New <code>appID</code> line / paths on host; IdP redirect URIs; one verified universal link on device.</td>
+      </tr>
+      <tr>
+        <td>App Store listing &amp; binary</td>
+        <td>6 h</td>
+        <td>ASC metadata, graphics, <strong>App Privacy</strong> deltas if needed, compliance URLs, upload to correct app record.</td>
+      </tr>
+      <tr>
+        <td>Smoke test</td>
+        <td>2 h</td>
+        <td>TestFlight install, login, push, deep link; confirm bundle and team.</td>
+      </tr>
+      <tr>
+        <td><strong>Subtotal</strong></td>
+        <td><strong>20 h</strong></td>
+        <td>5 + 3 + 4 + 6 + 2. Add time for extra extensions, Watch, or additional OAuth providers.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Phases (detail + specified hours)</h2>
+  <ul>
+    <li>
+      <strong>10 h — Xcode foundation</strong><br />
+      Per-brand <strong>target</strong>, <strong>bundle ID</strong>, <strong>xcconfig</strong> / build settings; <strong>Debug</strong> / <strong>Release</strong> and <strong>Archive</strong> verified.
+      <ul>
+        <li><strong>4 h</strong> — Target duplication, product name, shared target membership, Info.plist / generated settings, local builds for all schemes.</li>
+        <li><strong>4 h</strong> — CI: <code>xcodebuild archive</code> for non-default scheme, artifact naming, <strong>exportOptions.plist</strong> or ASC API upload wiring.</li>
+        <li><strong>2 h</strong> — Signing runbook: App IDs, profiles per bundle, where secrets live, common Xcode signing errors.</li>
+      </ul>
+    </li>
+    <li>
+      <strong>10 h — Store-visible identity</strong><br />
+      <ul>
+        <li><strong>2 h</strong> — Display name (and debug label if used) in plist or xcconfig.</li>
+        <li><strong>5 h</strong> — Full <strong>App Icon</strong> set + validation on device (including optional dark/tinted).</li>
+        <li><strong>3 h</strong> — Launch screen / storyboard; notification category strings if brand-specific.</li>
+      </ul>
+    </li>
+    <li>
+      <strong>8 h — Firebase &amp; push</strong><br />
+      <ul>
+        <li><strong>3 h</strong> — <strong>GoogleService-Info.plist</strong> per target or copy phase; all schemes compile.</li>
+        <li><strong>5 h</strong> — Push capability, APNs key/certs in dev portal + Firebase, physical device receive + display; entitlement/build fixes.</li>
+      </ul>
+    </li>
+    <li>
+      <strong>28 h — iOS theme &amp; high-traffic surfaces</strong><br />
+      <ul>
+        <li><strong>9 h</strong> — Color sets / semantic colors; navigation chrome, tab bar, primary buttons.</li>
+        <li><strong>14 h</strong> — Splash, login, shell, settings: layouts and assets read on-brand.</li>
+        <li><strong>5 h</strong> — Targeted hardcoded-color fixes; backlog for full audit.</li>
+      </ul>
+    </li>
+    <li>
+      <strong>14 h — Universal links, URL schemes, OAuth</strong><br />
+      <ul>
+        <li><strong>6 h</strong> — Associated Domains entitlement; <strong>AASA</strong> on staging/prod (format, MIME, caching); CDN/host checks.</li>
+        <li><strong>8 h</strong> — OAuth redirect URIs per bundle; ASWebAuthenticationSession / SF flow; universal link from Mail/Notes/Safari.</li>
+      </ul>
+    </li>
+    <li>
+      <strong>16 h — React Native bundle</strong><br />
+      <ul>
+        <li><strong>5 h</strong> — Scheme/target or env injection for <code>constants/colors.ts</code>; Metro config per brand if needed.</li>
+        <li><strong>5 h</strong> — Brand images on in-use RN screens.</li>
+        <li><strong>6 h</strong> — Product strings in JS/TS; <strong>pod install</strong> / build-setting edge cases for the new scheme.</li>
+      </ul>
+    </li>
+    <li>
+      <strong>22 h — Runtime branding hook-up</strong><br />
+      <ul>
+        <li><strong>7 h</strong> — Tenant / org resolution; defaults and errors.</li>
+        <li><strong>10 h</strong> — Fetch/cache branding payload; apply colors/logos; fallback to local defaults.</li>
+        <li><strong>5 h</strong> — QA: cold start, re-login, offline; small polish.</li>
+      </ul>
+    </li>
+    <li>
+      <strong>10 h — App Store Connect &amp; release</strong>
+      <ul>
+        <li><strong>5 h</strong> — ASC app record, listing, screenshots, support/privacy URLs, <strong>App Privacy</strong> questionnaire.</li>
+        <li><strong>5 h</strong> — Upload build, TestFlight groups, export compliance if prompted, sign-off checklist.</li>
+      </ul>
+    </li>
+  </ul>
+
+  <p><strong>Calendar vs hours.</strong> Example: two engineers splitting iOS theme (28 h) and RN (16 h) in parallel saves wall time but the <strong>effort budget</strong> stays <strong>44 h</strong> for those two tracks. First brand: <strong>118 h</strong> total if no parallelization.</p>
+
+  <h2>What the backend must provide (no implementation timeline)</h2>
+  <p>Same runtime dependencies as Android; iOS registration needs <strong>bundle ID</strong> and <strong>AASA</strong> alignment.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Need</th>
+        <th>What to supply (concrete)</th>
+        <th>Why / how the app uses it</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Tenant / org resolution</strong></td>
+        <td>Documented rule: tenant/school id (header, login response, deep link, install config). Staging users for multiple tenants.</td>
+        <td>Runtime branding and cache keys depend on a stable rule.</td>
+      </tr>
+      <tr>
+        <td><strong>Branding payload</strong></td>
+        <td>Versioned JSON (or OpenAPI): colors, logo URLs, optional strings; staging examples; optional ETag/version.</td>
+        <td>The 22 h runtime block maps fields into UI; vague contracts waste time.</td>
+      </tr>
+      <tr>
+        <td><strong>Legal &amp; support URLs</strong></td>
+        <td>Per-tenant or per-app privacy, terms, support URLs (or agreement they live only in ASC/plist).</td>
+        <td>Store and in-app must stay consistent per listing.</td>
+      </tr>
+      <tr>
+        <td><strong>Push semantics</strong></td>
+        <td>Topic/segment naming, subscribe/unsubscribe rules, test sends per tenant; or “server-only, client unchanged beyond plist.”</td>
+        <td>Avoids cross-tenant push mistakes.</td>
+      </tr>
+      <tr>
+        <td><strong>Deep link &amp; OAuth alignment</strong></td>
+        <td>HTTPS hosts/paths per env; <strong>redirect URIs per iOS bundle ID</strong>; sample magic links; <strong>AASA</strong> paths and <code>TEAMID.bundleid</code> for each shipped app.</td>
+        <td>Universal links and OAuth fail when host, path, or <code>appID</code> do not match.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Anything not in this payload remains the client’s responsibility: <strong>bundle identifier</strong>, App Icon, default local theme, <strong>Firebase → bundle ID mapping</strong>, <strong>code signing</strong>, and <strong>App Store Connect</strong> metadata ownership.</p>
+
+  <h2>Android vs iOS (different levers, different hour shape)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Concern</th>
+        <th>Android (flavors)</th>
+        <th>iOS (this doc)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Multiple apps from one repo</td>
+        <td><code>productFlavors</code> + <code>applicationId</code></td>
+        <td><strong>Targets</strong> + <strong>schemes</strong> + unique <strong>bundle ID</strong> per brand</td>
+      </tr>
+      <tr>
+        <td>Per-brand assets / strings</td>
+        <td><code>src/&lt;flavor&gt;/res</code></td>
+        <td>Per-target <strong>Asset Catalogs</strong>, plist/xcconfig, target-scoped sources</td>
+      </tr>
+      <tr>
+        <td>Store association</td>
+        <td>Play app ↔ <code>applicationId</code></td>
+        <td>ASC app ↔ <strong>bundle ID</strong> + team; upload must match</td>
+      </tr>
+      <tr>
+        <td>Verified links</td>
+        <td>Digital Asset Links</td>
+        <td><strong>Associated Domains</strong> + <strong>AASA</strong> (Apple-specific <code>appID</code>)</td>
+      </tr>
+      <tr>
+        <td>Push config</td>
+        <td><code>google-services.json</code></td>
+        <td><strong>GoogleService-Info.plist</strong> + <strong>Push Notifications</strong> capability + correct <strong>APNs</strong> key/certs in Firebase</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="footnote">
+    Companion reference:
+    <a href="https://hp-piyush.github.io/white-labelling-timeline/">hp-piyush.github.io/white-labelling-timeline</a> (Android — different hour totals).
+    Adjust per team, extension count, and whether UI is mostly SwiftUI vs React Native.
+  </p>
+
+</body>
+</html>
