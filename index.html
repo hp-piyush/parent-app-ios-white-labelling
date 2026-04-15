@@ -80,11 +80,10 @@
   <p class="lead">
     iOS + bundled React Native — <strong>specified engineering hours</strong> per task (implement + test + fix).
     Estimates are for <strong>one</strong> additional brand after a shared codebase exists; see assumptions below.
-    For comparison only (not the same numbers):
-    <a href="https://hp-piyush.github.io/white-labelling-timeline/">White-label rollout — hour budget (Android)</a>.
+    Figures reflect shipping <strong>distinct App Store apps</strong> (separate bundle IDs) from a single repository.
   </p>
 
-  <p><strong>Why iOS totals differ from Android.</strong> Apple’s model is <strong>targets + bundle IDs + provisioning + ASC</strong> per installable app, not Gradle flavors. Expect more time on <strong>code signing and CI export</strong>, <strong>APNs + entitlements</strong>, <strong>Universal Links / AASA</strong> (host + <code>TEAMID.bundleid</code> correctness), <strong>App Store Connect</strong> (privacy questionnaire, screenshot matrix, TestFlight), and <strong>React Native + CocoaPods</strong> per scheme. Android’s <strong>104 h</strong> / <strong>16 h</strong> pipeline is a useful cross-check; this iOS plan is <strong>not</strong> copy-pasted from those figures.</p>
+  <p><strong>Why these phase weights.</strong> Each customer-facing app needs its own <strong>target, bundle identifier, provisioning, and App Store Connect</strong> record. The budget allows for <strong>code signing and CI export</strong>, <strong>APNs and entitlements</strong>, <strong>Universal Links and AASA</strong> (correct host, paths, and <code>TEAMID.bundleid</code>), <strong>App Store Connect</strong> work (privacy questionnaire, required screenshots, TestFlight), and <strong>React Native plus CocoaPods</strong> across schemes.</p>
 
   <p><strong>Scope.</strong> Client-side work to ship <em>distinct installable apps</em> from one repo (separate bundle IDs / App Store listings). <strong>Not</strong> backend implementation hours. Cross-reference any shared audit docs your project uses (e.g. <code>docs/WHITE_LABEL_AUDIT_CHECKLIST.md</code>).</p>
 
@@ -147,7 +146,7 @@
       <tr>
         <td><strong>Total (first brand, sequential)</strong></td>
         <td><strong>118 h</strong></td>
-        <td><strong>10 + 10 + 8 + 28 + 14 + 16 + 22 + 10.</strong> Sized for iOS-specific friction (signing, AASA, ASC, RN/Pods). <strong></strong></td>
+        <td><strong>10 + 10 + 8 + 28 + 14 + 16 + 22 + 10.</strong> Add buffer if the roadmap adds app extensions, Watch, or separate notification service targets.</td>
       </tr>
       <tr>
         <td><strong>Each further brand (pipeline already done)</strong></td>
@@ -269,7 +268,7 @@
   <p><strong>Calendar vs hours.</strong> Example: two engineers splitting iOS theme (28 h) and RN (16 h) in parallel saves wall time but the <strong>effort budget</strong> stays <strong>44 h</strong> for those two tracks. First brand: <strong>118 h</strong> total if no parallelization.</p>
 
   <h2>What the backend must provide (no implementation timeline)</h2>
-  <p>Same runtime dependencies as Android; iOS registration needs <strong>bundle ID</strong> and <strong>AASA</strong> alignment.</p>
+  <p>The mobile client depends on the contracts below for runtime behavior. <strong>Bundle identifiers</strong> and the <strong>apple-app-site-association</strong> file must stay aligned with what ships in Xcode and on your HTTPS hosts.</p>
 
   <table>
     <thead>
@@ -310,48 +309,40 @@
 
   <p>Anything not in this payload remains the client’s responsibility: <strong>bundle identifier</strong>, App Icon, default local theme, <strong>Firebase → bundle ID mapping</strong>, <strong>code signing</strong>, and <strong>App Store Connect</strong> metadata ownership.</p>
 
-  <h2>Android vs iOS (different levers, different hour shape)</h2>
+  <h2>iOS packaging reference (one repo, many brands)</h2>
   <table>
     <thead>
       <tr>
-        <th>Concern</th>
-        <th>Android (flavors)</th>
-        <th>iOS (this doc)</th>
+        <th>Area</th>
+        <th>Typical approach</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td>Multiple apps from one repo</td>
-        <td><code>productFlavors</code> + <code>applicationId</code></td>
-        <td><strong>Targets</strong> + <strong>schemes</strong> + unique <strong>bundle ID</strong> per brand</td>
+        <td>Multiple installable apps from one repo</td>
+        <td><strong>Targets</strong> and <strong>schemes</strong>, each customer app with a unique <strong>bundle identifier</strong></td>
       </tr>
       <tr>
-        <td>Per-brand assets / strings</td>
-        <td><code>src/&lt;flavor&gt;/res</code></td>
-        <td>Per-target <strong>Asset Catalogs</strong>, plist/xcconfig, target-scoped sources</td>
+        <td>Per-brand assets and strings</td>
+        <td>Per-target <strong>Asset Catalogs</strong>, plist or <strong>.xcconfig</strong>, and sources scoped to the correct target</td>
       </tr>
       <tr>
-        <td>Store association</td>
-        <td>Play app ↔ <code>applicationId</code></td>
-        <td>ASC app ↔ <strong>bundle ID</strong> + team; upload must match</td>
+        <td>App Store listing and uploads</td>
+        <td>One <strong>App Store Connect</strong> app record per bundle ID and team; uploaded builds must match that record</td>
       </tr>
       <tr>
-        <td>Verified links</td>
-        <td>Digital Asset Links</td>
-        <td><strong>Associated Domains</strong> + <strong>AASA</strong> (Apple-specific <code>appID</code>)</td>
+        <td>Links from Mail, Safari, and HTTPS</td>
+        <td><strong>Associated Domains</strong> plus a valid <strong>apple-app-site-association</strong> file (<code>appID</code> uses team ID + bundle ID)</td>
       </tr>
       <tr>
-        <td>Push config</td>
-        <td><code>google-services.json</code></td>
-        <td><strong>GoogleService-Info.plist</strong> + <strong>Push Notifications</strong> capability + correct <strong>APNs</strong> key/certs in Firebase</td>
+        <td>Push notifications</td>
+        <td><strong>GoogleService-Info.plist</strong>, <strong>Push Notifications</strong> capability, and <strong>APNs</strong> credentials linked in Firebase</td>
       </tr>
     </tbody>
   </table>
 
   <p class="footnote">
-    Companion reference:
-    <a href="https://hp-piyush.github.io/white-labelling-timeline/">hp-piyush.github.io/white-labelling-timeline</a> (Android — different hour totals).
-    Adjust per team, extension count, and whether UI is mostly SwiftUI vs React Native.
+    Adjust hours for team size, prior white-label experience, number of app extensions, and how much of the product UI lives in SwiftUI versus React Native.
   </p>
 
 </body>
