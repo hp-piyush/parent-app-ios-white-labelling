@@ -85,9 +85,7 @@
 
   <p><strong>Why these phase weights.</strong> Each customer-facing app needs its own <strong>target, bundle identifier, provisioning, and App Store Connect</strong> record. The budget allows for <strong>code signing and CI export</strong>, <strong>APNs and entitlements</strong>, <strong>Universal Links and AASA</strong> (correct host, paths, and <code>TEAMID.bundleid</code>), <strong>App Store Connect</strong> work (privacy questionnaire, required screenshots, TestFlight), and <strong>React Native plus CocoaPods</strong> across schemes.</p>
 
-  <p><strong>Scope.</strong> Client-side work to ship <em>distinct installable apps</em> from one repo (separate bundle IDs / App Store listings). <strong>Not</strong> backend implementation hours. Cross-reference any shared audit docs your project uses (e.g. <code>docs/WHITE_LABEL_AUDIT_CHECKLIST.md</code>).</p>
-
-  <p><strong>Totals.</strong> Sequential first brand: <strong>118 h</strong> (sum of phase totals below). Phases can run <strong>in parallel</strong>; wall-calendar time is not 118 ÷ 40. Each <strong>additional</strong> brand after the pipeline exists: <strong>20 h</strong> (assets, Firebase iOS client, universal links / OAuth + AASA, App Store Connect + TestFlight slice, smoke test).</p>
+  <p><strong>Totals.</strong> Sequential first brand: <strong>118 h</strong> (sum of phase totals below). Phases can run <strong>in parallel</strong>;<strong>additional</strong> brand after the pipeline exists: <strong>20 h</strong> (assets, Firebase iOS client, universal links / OAuth + AASA, App Store Connect + TestFlight slice, smoke test).</p>
 
   <p><strong>Assumptions.</strong> iOS UI work covers app-wide appearance tokens + splash, login, main shell, and settings — not a whole-repo purge of every hardcoded color. Runtime branding assumes the <strong>API contract and sample payloads</strong> exist before that block starts. One Apple Developer team; each brand still needs its own <strong>bundle ID</strong>, <strong>App ID</strong>, and <strong>distribution provisioning profile</strong> (or automatic signing with correct team + bundle).</p>
 
@@ -341,9 +339,6 @@
     </tbody>
   </table>
 
-  <p class="footnote">
-    Adjust hours for team size, prior white-label experience, number of app extensions, and how much of the product UI lives in SwiftUI versus React Native.
-  </p>
 
 </body>
 </html>
